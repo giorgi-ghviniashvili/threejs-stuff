@@ -1,24 +1,26 @@
 var scene, camera, renderer;
 var materials, planets;
-var angle = 0;
+
 var planetNames = [
+  "sun",
+  "mercury",
+  "venus",
   "earth", 
-  "jupiter", 
   "mars", 
-  "mercury", 
-  "neptune", 
-  "pluto", 
+  "jupiter", 
   "saturn", 
-  "sun", 
   "uranus", 
-  "venus"
+  "neptune",
+  "pluto"
 ]
+
+var galaxyRadius = 270;
 
 function initScene() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera( 80, window.innerWidth/window.innerHeight, 0.1, 1000 );
-  camera.position.z = 150;
-  camera.position.y = 50;
+  camera.position.z = 350;
+  camera.position.y = 40;
   renderer = new THREE.WebGLRenderer({ alpha: true });
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
@@ -31,7 +33,7 @@ function loadPlanetsTextures() {
 
   planetNames.forEach(planet => {
     textureLoader.load(`./textures/${planet}.jpg`, function(texture) {
-        materials.push(new THREE.MeshPhongMaterial( { map: texture,bumpScale: 0.005 } ));  
+        materials.push(new THREE.MeshPhongMaterial( { map: texture, bumpScale: 0.005 } ));  
         if (materials.length == planetNames.length) {
             createPlanets();
             render();
@@ -59,9 +61,10 @@ function initLights() {
 }
 
 function Planet(name, material) {
+  let index = planetNames.indexOf(name)
   this.name = name;
   // init
-  var size = 10+Math.random()*10;
+  var size = Math.random() * 20;
 
   var geometry = new THREE.SphereGeometry(size, 32, 32);
   var planet = new THREE.Mesh( geometry, material );
@@ -73,12 +76,13 @@ function Planet(name, material) {
     y: -variance + Math.random()*variance*2
   }
 
-  var radius = Math.random() * 150 + 50;
+  var radius = index * (galaxyRadius / planetNames.length);
+  debugger
   scene.add( planet );
   let random = Math.random() * Math.PI * 2
   planet.position.y = 0;
   planet.position.x = Math.cos(random) * radius;
-  planet.position.z = -Math.sin(random) * radius - 200;
+  planet.position.z = -Math.sin(random) * radius;
 
   this.size = size;
   this.radius = radius;
@@ -93,8 +97,8 @@ Planet.prototype.rotate = function() {
 
 Planet.prototype.move = function() {
   this.angle += 0.01;
-  this.mesh.position.x = Math.cos(this.angle) * this.radius + this.size
-  this.mesh.position.z = -Math.sin(this.angle) * this.radius - 200
+  this.mesh.position.x = Math.cos(this.angle) * this.radius
+  this.mesh.position.z = -Math.sin(this.angle) * this.radius
 }
 
 function render() {
@@ -103,8 +107,7 @@ function render() {
   renderer.render(scene, camera);
   for (var i = 0; i < planetNames.length; i++) {
     planets[i].rotate();
-    planets[i].move()
-    console.log(planets[i].mesh.position)
+    planets[i].move();
   }
 }
 
