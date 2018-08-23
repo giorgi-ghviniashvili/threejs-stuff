@@ -1,11 +1,24 @@
 var scene, camera, renderer;
 var materials, planets;
 var angle = 0;
-var planetNames = ["earth", "jupiter", "mars", "mercury", "neptune", "pluto", "saturn", "sun", "uranus", "venus"]
+var planetNames = [
+  "earth", 
+  "jupiter", 
+  "mars", 
+  "mercury", 
+  "neptune", 
+  "pluto", 
+  "saturn", 
+  "sun", 
+  "uranus", 
+  "venus"
+]
 
 function initScene() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera( 80, window.innerWidth/window.innerHeight, 0.1, 1000 );
+  camera.position.z = 150;
+  camera.position.y = 50;
   renderer = new THREE.WebGLRenderer({ alpha: true });
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
@@ -59,12 +72,17 @@ function Planet(name, material) {
     x: -variance + Math.random()*variance*2,
     y: -variance + Math.random()*variance*2
   }
-  var field = 300;
+
+  var radius = Math.random() * 150 + 50;
   scene.add( planet );
-  planet.position.x = -field+Math.random()*field*2;
-  planet.position.y = -field+Math.random()*field*2;
-  planet.position.z = -field+Math.random()*field*2;
-  
+  let random = Math.random() * Math.PI * 2
+  planet.position.y = 0;
+  planet.position.x = Math.cos(random) * radius;
+  planet.position.z = -Math.sin(random) * radius - 200;
+
+  this.size = size;
+  this.radius = radius;
+  this.angle = random;
   this.mesh = planet;
 }
 
@@ -73,25 +91,21 @@ Planet.prototype.rotate = function() {
   this.mesh.rotation.y += this.vr.y;
 }
 
+Planet.prototype.move = function() {
+  this.angle += 0.01;
+  this.mesh.position.x = Math.cos(this.angle) * this.radius + this.size
+  this.mesh.position.z = -Math.sin(this.angle) * this.radius - 200
+}
+
 function render() {
   requestAnimationFrame( render );
 
   renderer.render(scene, camera);
   for (var i = 0; i < planetNames.length; i++) {
     planets[i].rotate();
+    planets[i].move()
+    console.log(planets[i].mesh.position)
   }
-  
-  updateCamPosition();
-}
-
-function updateCamPosition() {
-  angle += 0.005;
-  var z = 100 * Math.cos(angle);
-  var y = 100 * Math.sin(angle);
-
-  camera.position.z = z;
-  camera.position.y = y;
-  camera.rotation.x = z*0.02;
 }
 
 function resize() {
